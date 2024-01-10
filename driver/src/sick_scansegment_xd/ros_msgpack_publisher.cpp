@@ -127,7 +127,7 @@ sick_scansegment_xd::CustomPointCloudConfiguration::CustomPointCloudConfiguratio
 		if (echos.empty())
 		    echos = { 0, 1, 2 };
 		if (layers.empty())
-		    layers = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };  // fill vector 0 ... 15
+		    layers = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
 		if (reflectors.empty())
 		    reflectors = { 0, 1 };
 		if (infringed.empty())
@@ -267,7 +267,7 @@ sick_scansegment_xd::RosMsgpackPublisher::RosMsgpackPublisher(const std::string&
 #endif
 {
 	m_active = false;
-  m_frame_id = config.publish_frame_id; 
+  m_frame_id = config.publish_frame_id;
 	m_imu_frame_id = config.publish_imu_frame_id;
 	m_node = config.node;
 	m_laserscan_layer_filter = config.laserscan_layer_filter;
@@ -549,9 +549,9 @@ class CustomizedPointXYZRAEI32f : public sick_scansegment_xd::PointXYZRAEI32f
 {
 public:
   CustomizedPointXYZRAEI32f() : sick_scansegment_xd::PointXYZRAEI32f() {}
-  CustomizedPointXYZRAEI32f(uint32_t timestamp_sec, uint32_t timestamp_nsec, uint64_t lidar_timestamp_start_microsec, const sick_scansegment_xd::PointXYZRAEI32f& point) : sick_scansegment_xd::PointXYZRAEI32f(point) 
+  CustomizedPointXYZRAEI32f(uint32_t timestamp_sec, uint32_t timestamp_nsec, uint64_t lidar_timestamp_start_microsec, const sick_scansegment_xd::PointXYZRAEI32f& point) : sick_scansegment_xd::PointXYZRAEI32f(point)
 	{
-		if (point.lidar_timestamp_microsec > lidar_timestamp_start_microsec) 
+		if (point.lidar_timestamp_microsec > lidar_timestamp_start_microsec)
 		{
 		  time_offset_nanosec = (uint32_t)(1000 * (point.lidar_timestamp_microsec - lidar_timestamp_start_microsec));
 			time_offset_sec = (float)(1.0e-6 * (point.lidar_timestamp_microsec - lidar_timestamp_start_microsec));
@@ -741,7 +741,7 @@ void sick_scansegment_xd::RosMsgpackPublisher::convertPointsToLaserscanMsg(uint3
 			: maxNumberOfPoints;
 	}
 
-	LaserScanMsgEchoLayerSegments points_echo_layer_segment_map; 
+	LaserScanMsgEchoLayerSegments points_echo_layer_segment_map;
 	for (int echoIdx = 0; echoIdx < lidar_points.size(); echoIdx++)
 	{
 		int last_layer = INT_MAX;
@@ -873,7 +873,7 @@ void sick_scansegment_xd::RosMsgpackPublisher::convertPointsToLaserscanMsg(uint3
 			  echo_enabled = false; // m_host_FREchoFilter == 2: LAST_ECHO only (EchoCount=1)
 		}
 		if (!echo_enabled)
-			continue; 
+			continue;
 		std::map<int,ros_sensor_msgs::LaserScan>& laser_scan_layer_map = laser_scan_echo_iter->second;
 		for(std::map<int,ros_sensor_msgs::LaserScan>::iterator laser_scan_msg_iter = laser_scan_layer_map.begin(); laser_scan_msg_iter != laser_scan_layer_map.end(); laser_scan_msg_iter++)
 		{
@@ -883,14 +883,14 @@ void sick_scansegment_xd::RosMsgpackPublisher::convertPointsToLaserscanMsg(uint3
 			{
 				float angle_diff = laser_scan_msg.angle_max - laser_scan_msg.angle_min;
 				/* It can indeed happen that the angle difference of the multiScan165 is slightly greater than 2 * pi.
-				   Therefore, we must not apply the unwrapping at this point. At this location there used to be a wrapping step, 
+				   Therefore, we must not apply the unwrapping at this point. At this location there used to be a wrapping step,
 				   which was removed in Q4 / 2025.
 				 */
 				laser_scan_msg.angle_increment = angle_diff / (float)(laser_scan_msg.ranges.size() - 1);
 				laser_scan_msg.range_min -= 1.0e-03f;
 				laser_scan_msg.range_max += 1.0e-03f;
 				laser_scan_msg.range_min = std::max(0.05f, laser_scan_msg.range_min); // min range of multiScan and picoScan: 0.05 [m]
-				
+
 
 				laser_scan_msg.header.stamp.sec = timestamp_sec;
 #if defined __ROS_VERSION && __ROS_VERSION > 1
@@ -898,7 +898,10 @@ void sick_scansegment_xd::RosMsgpackPublisher::convertPointsToLaserscanMsg(uint3
 #elif defined __ROS_VERSION && __ROS_VERSION > 0
 				laser_scan_msg.header.stamp.nsec = timestamp_nsec;
 #endif
-				laser_scan_msg.header.frame_id = frame_id + "_" + std::to_string(layer_idx + 1);
+                                laser_scan_msg.header.frame_id = frame_id;
+                                if (laser_scan_layer_map.size() > 1){
+                                  laser_scan_msg.header.frame_id = laser_scan_msg.header.frame_id + "_" + std::to_string(layer_idx + 1);
+                                }
 				if (num_echos_publish > 1)
 				  laser_scan_msg.header.frame_id = laser_scan_msg.header.frame_id + "_" + std::to_string(echo_idx);
 				// scan_time = 1 / scan_frequency = time for a full 360-degree rotation of the sensor
