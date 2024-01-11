@@ -263,7 +263,7 @@ bool sick_scansegment_xd::RosMsgpackPublisher::initLFPlayerFilterSettings(const 
  */
 sick_scansegment_xd::RosMsgpackPublisher::RosMsgpackPublisher(const std::string& node_name, const sick_scansegment_xd::Config& config)
 #if defined __ROS_VERSION && __ROS_VERSION > 1
-	: Node(node_name)
+	: Node(node_name + "segment_xd")
 #endif
 {
 	m_active = false;
