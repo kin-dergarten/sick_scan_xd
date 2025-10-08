@@ -88,13 +88,17 @@ bool SoftwarePLL::pushIntoFifo(double curTimeStamp, uint32_t curtick)
   return (true);
 }
 
+double SoftwarePLL::convertToRelativeTimeStamp(uint32_t tick)
+{
+  int32_t tempTick = tick - (uint32_t) (0xFFFFFFFF & FirstTick());
+  return static_cast<double>(tempTick);
+}
+
 double SoftwarePLL::extraPolateRelativeTimeStamp(uint32_t tick)
 {
-  int32_t tempTick = 0;
-  tempTick = tick - (uint32_t) (0xFFFFFFFF & FirstTick());
+  double tempTick = convertToRelativeTimeStamp(tick);
   double timeDiff = tempTick * this->InterpolationSlope();
   return (timeDiff);
-
 }
 
 int SoftwarePLL::findDiffInFifo(double diff, double tol)
@@ -113,6 +117,16 @@ int SoftwarePLL::findDiffInFifo(double diff, double tol)
   }
 
   return (numFnd);
+}
+
+void SoftwarePLL::disableCorrection()
+{
+  correctionDisabled = true;
+}
+
+void SoftwarePLL::enableCorrection()
+{
+  correctionDisabled = false;
 }
 
 /*!
@@ -181,17 +195,29 @@ bool SoftwarePLL::updatePLL(uint32_t sec, uint32_t nanoSec, uint32_t curtick)
 
 }
 
-//TODO Kommentare
 bool SoftwarePLL::getCorrectedTimeStamp(uint32_t &sec, uint32_t &nanoSec, uint32_t curtick)
 {
-  if (IsInitialized() == false)
+  //ensure that everything is initialized to avoid using a wrong first time stamp
+  if ((IsInitialized() == false))
   {
     return (false);
   }
 
-  double relTimeStamp = extraPolateRelativeTimeStamp(curtick); // evtl. hier wg. Ueberlauf noch einmal pruefen
+  double relTimeStamp = 0.;
+  if (correctionDisabled == true)
+  {
+    //if we should not apply a correction, we just convert the ticks to relative times
+    relTimeStamp = convertToRelativeTimeStamp(curtick);
+  }
+  else
+  {
+    //get relative time stamp in a corrected way
+    relTimeStamp = extraPolateRelativeTimeStamp(curtick); // evtl. hier wg. Ueberlauf noch einmal pruefen
+  }
+
   double corrTime = relTimeStamp + this->FirstTimeStamp();
-  sec = (uint32_t) corrTime;
+
+  sec = static_cast<uint32_t>(corrTime);
   double frac = corrTime - sec;
   nanoSec = (uint32_t) (1E9 * frac);
   return (true);

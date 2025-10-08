@@ -185,6 +185,7 @@ namespace sick_scansegment_xd
         std::vector<int> laserscan_layer_filter; // Default: { 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, i.e. laserscan messages for layer 5 activated (elevation -0.07 degree, max number of scan points)
 
         rosNodePtr node; // NodePtr node; // ROS node handle (always 0 on non-ros-targets)
+        bool use_pll_correction;
 
     }; // class Config
 

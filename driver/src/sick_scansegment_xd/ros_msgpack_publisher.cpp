@@ -56,6 +56,7 @@
 #include <sick_scan/sick_generic_callback.h>
 #include "sick_scansegment_xd/compact_parser.h"
 #include "sick_scansegment_xd/ros_msgpack_publisher.h"
+#include "softwarePLL.h"
 #if defined ROSSIMU
 #include "sick_scan/pointcloud_utils.h"
 #endif
@@ -403,6 +404,15 @@ sick_scansegment_xd::RosMsgpackPublisher::RosMsgpackPublisher(const std::string&
 			m_custom_pointclouds_cfg.push_back(custom_pointcloud_cfg);
 		}
 	}
+
+    if (config.use_pll_correction)
+    {
+      SoftwarePLL::instance().enableCorrection();
+    }
+    else
+    {
+        SoftwarePLL::instance().disableCorrection();
+    }
 }
 
 /*

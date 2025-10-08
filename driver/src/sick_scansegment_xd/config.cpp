@@ -203,6 +203,7 @@ sick_scansegment_xd::Config::Config()
     // Default is "0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0", i.e. laserscan messages for layer 5, (elevation -0.07 degree, max number of scan points)
     laserscan_layer_filter = { 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
+    use_pll_correction = true; // default True, Defines whether the pll correction should be applied to correct the header timestamp
 }
 
 /*
@@ -238,6 +239,7 @@ void sick_scansegment_xd::Config::PrintHelp(void)
     ROS_INFO_STREAM("-imu_enable=0|1 : enable or disable IMU data, default: " << imu_enable);
     ROS_INFO_STREAM("-imu_udp_port=<port>: udp port for multiScan imu data, default: " << imu_udp_port);
     ROS_INFO_STREAM("-imu_latency_microsec=<micro_sec>: imu latency in microseconds, default: " << imu_latency_microsec);
+    ROS_INFO_STREAM("-use_pll_correction=0|1 : enable or disable use of the pll correction algorithm, default: " << use_pll_correction);
 }
 
 /*
@@ -333,6 +335,7 @@ bool sick_scansegment_xd::Config::Init(rosNodePtr _node)
     std::string str_laserscan_layer_filter = "0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0";
     ROS_DECL_GET_PARAMETER(node, "laserscan_layer_filter", str_laserscan_layer_filter);
     sick_scansegment_xd::util::parseVector(str_laserscan_layer_filter, laserscan_layer_filter);
+    ROS_DECL_GET_PARAMETER(node, "use_pll_correction", use_pll_correction);
 
     if (imu_enable && scandataformat != 2)
     {
@@ -449,6 +452,7 @@ bool sick_scansegment_xd::Config::Init(int argc, char** argv)
         sick_scansegment_xd::util::parseVector(cli_msgpack_validator_layer_filter, msgpack_validator_filter_settings.msgpack_validator_layer_filter);
     if (setOptionalArgument(cli_parameter_map, "laserscan_layer_filter", cli_laserscan_layer_filter))
         sick_scansegment_xd::util::parseVector(cli_laserscan_layer_filter, laserscan_layer_filter);
+    setOptionalArgument(cli_parameter_map, "use_pll_correction", use_pll_correction);
 
     PrintConfig();
 
@@ -517,5 +521,6 @@ void sick_scansegment_xd::Config::PrintConfig(void)
     ROS_INFO_STREAM("msgpack_validator_elevation_end:                   " << msgpack_validator_filter_settings.msgpack_validator_elevation_end << " [rad]");
     ROS_INFO_STREAM("msgpack_validator_valid_segments:                  " << sick_scansegment_xd::util::printVector(msgpack_validator_valid_segments));
     ROS_INFO_STREAM("msgpack_validator_layer_filter:                    " << sick_scansegment_xd::util::printVector(msgpack_validator_filter_settings.msgpack_validator_layer_filter));
+    ROS_INFO_STREAM("use_pll_correction:                    " << use_pll_correction);
 
 }
